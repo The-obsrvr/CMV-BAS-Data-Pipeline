@@ -313,8 +313,8 @@ def main():
     parser = argparse.ArgumentParser(
         description='Convert raw CMV JSON/JSONL to flattened paragraph format.'
     )
-    parser.add_argument('input',  help='Input file (.json or .jsonl/.ndjson)')
-    parser.add_argument('output', help='Output file (.json or .jsonl/.ndjson)')
+    parser.add_argument('--input',  help='Input file (.json or .jsonl/.ndjson)')
+    parser.add_argument('--output', help='Output file (.json or .jsonl/.ndjson)')
     parser.add_argument(
         '--format',
         choices=['json', 'jsonl'],

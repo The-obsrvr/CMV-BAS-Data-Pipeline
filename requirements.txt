@@ -1,0 +1,7 @@
+tqdm
+nltk
+sentence-transformers
+scikit-learn
+
+numpy
+pandas
