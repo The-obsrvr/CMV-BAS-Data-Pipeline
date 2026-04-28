@@ -76,6 +76,10 @@ Following cleaning/filtering steps have been performed:
 - **Text normalization**  
   Comments are cleaned to remove non-ASCII characters, URLs, emojis, and other non-textual objects.
 
+Prior to length-wise filtering and semantic topic-filtering, 65169 submission(s) were identified in the raw file covering 602,726 thread(s).
+
+Post applying length filtering (minimum 10 comments excluding OP) and semantic filtering (to identify euro-centric posts or migration/health/climate) posts, we get 
+
 
 ### Reformatting Thread format to paragraph format
 
