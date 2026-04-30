@@ -10,9 +10,9 @@ from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
 
 
-# CONFIG
-MIN_SENTENCES = 50
-SIM_THRESHOLD = 0.35   # tune this
+# CONFIG - tunable
+MIN_SENTENCES = 30
+SIM_THRESHOLD = 0.35
 
 TOPIC_LABELS = {
     "migration": "immigration, refugees, asylum seekers, border policy",
@@ -125,9 +125,6 @@ def process_jsonl(input_path, output_path):
     print("Filtering complete.")
 
 
-# -----------------------------
-# RUN
-# -----------------------------
 if __name__ == "__main__":
     process_jsonl(
         input_path="Data/raw/outputs.jsonl",
