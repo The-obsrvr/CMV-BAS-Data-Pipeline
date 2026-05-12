@@ -28,6 +28,59 @@ def compute_basic_stats(threads):
     }
 
 
+def compute_conversation_stats(threads):
+    """
+    Compute average turns and sentences for delta vs non-delta conversations.
+    Uses pre-computed fields (turn_count, sentence_count) if available,
+    otherwise falls back to counting from the conversation list directly.
+    """
+
+    def get_turn_count(t):
+        if "turn_count" in t:
+            return t["turn_count"]
+        return sum(1 for turn in t.get("conversation", [])
+                   if not turn.get("deleted", False)
+                   )
+
+    def get_sentence_count(t):
+        if "sentence_count" in t:
+            return t["sentence_count"]
+        # fallback — requires nltk if not pre-computed
+        try:
+            from nltk.tokenize import sent_tokenize
+            return sum(
+                len(sent_tokenize(turn.get("text", "")))
+                for turn in t.get("conversation", [])
+                if not turn.get("deleted", False)
+                )
+        except Exception:
+            return 0
+
+    delta_threads = [t for t in threads if t.get("is_delta", False)]
+    non_delta_threads = [t for t in threads if not t.get("is_delta", False)]
+
+    def averages(group):
+        if not group:
+            return {"avg_turns": 0.0, "avg_sentences": 0.0, "count": 0}
+        turns = [get_turn_count(t) for t in group]
+        sentences = [get_sentence_count(t) for t in group]
+        return {
+            "count": len(group),
+            "avg_turns": round(sum(turns) / len(turns), 2),
+            "avg_sentences": round(sum(sentences) / len(sentences), 2),
+            "min_turns": min(turns),
+            "max_turns": max(turns),
+            "min_sentences": min(sentences),
+            "max_sentences": max(sentences),
+            }
+
+    return {
+        "delta": averages(delta_threads),
+        "non_delta": averages(non_delta_threads),
+        "overall": averages(threads),
+        }
+
+
 def split_eu(threads):
     eu_threads = [t for t in threads if t.get("is_eurocentric", False)]
     non_eu_threads = [t for t in threads if not t.get("is_eurocentric", False)]
@@ -59,12 +112,19 @@ def print_topic_stats(title, topic_dict):
         print(f"{topic}: {count} ({perc:.2f}%)")
 
 
- # -----------------------------
+def print_conversation_stats(stats):
+    print("\n===== AVERAGE TURNS & SENTENCES (DELTA vs NON-DELTA) =====")
+    for group, vals in stats.items():
+        print(
+            f"\n  {group.upper()} (n={vals['count']})\n"
+            f"    Turns     — avg: {vals['avg_turns']:>7.2f}  "
+            f"min: {vals['min_turns']:>4}  max: {vals['max_turns']:>4}\n"
+            f"    Sentences — avg: {vals['avg_sentences']:>7.2f}  "
+            f"min: {vals['min_sentences']:>4}  max: {vals['max_sentences']:>4}"
+            )
 
 
-    # -----------------------------
-    # UNIQUE TOPICS PER THREAD
-    # -----------------------------
+# UNIQUE TOPICS PER THREAD
 def unique_topics_per_thread(threads):
         counts = Counter()
 
@@ -75,9 +135,7 @@ def unique_topics_per_thread(threads):
         return dict(counts)
 
 
-    # -----------------------------
-    # DELTA vs TOPIC CORRELATION
-    # -----------------------------
+# DELTA vs TOPIC CORRELATION
 def delta_topic_correlation(threads):
 
         stats = defaultdict(lambda: {"delta": 0, "non_delta": 0, "total": 0})
@@ -109,9 +167,7 @@ def delta_topic_correlation(threads):
         return results
 
 
-    # -----------------------------
-    # CO-OCCURRENCE MATRIX
-    # -----------------------------
+# CO-OCCURRENCE MATRIX
 def topic_cooccurrence(threads):
         co_matrix = defaultdict(lambda: defaultdict(int))
 
@@ -165,23 +221,22 @@ def print_cooccurrence(matrix):
 
 
 
-
 def main(path):
 
     threads = load_threads(path)
 
-    # -----------------------------
+
     # OVERALL STATS
-    # -----------------------------
     overall_stats = compute_basic_stats(threads)
     print_stats("OVERALL", overall_stats)
 
     overall_topics = topic_distribution(threads)
     print_topic_stats("TOPIC DISTRIBUTION (OVERALL)", overall_topics)
 
-    # -----------------------------
+    conv_stats = compute_conversation_stats(threads)
+    print_conversation_stats(conv_stats)
+
     # EU SPLIT
-    # -----------------------------
     eu_threads, non_eu_threads = split_eu(threads)
 
     eu_stats = compute_basic_stats(eu_threads)
@@ -190,9 +245,7 @@ def main(path):
     print_stats("EU THREADS", eu_stats)
     print_stats("NON-EU THREADS", non_eu_stats)
 
-    # -----------------------------
     # TOPIC DISTRIBUTION BY GROUP
-    # -----------------------------
     eu_topics = topic_distribution(eu_threads)
     non_eu_topics = topic_distribution(non_eu_threads)
 
