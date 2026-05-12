@@ -7,6 +7,9 @@ RUN apt-get update && \
       curl pciutils screen && \
     rm -rf /var/lib/apt/lists/*
 
+# Install Ollama CLI
+RUN curl -fsSL https://ollama.ai/install.sh | sh
+
 # --- Upgrade pip toolchain ---
 RUN python -m pip install --no-cache-dir -U pip setuptools wheel
 
@@ -20,30 +23,28 @@ RUN python -m pip uninstall -y torch torchvision torchaudio || true && \
     python -m pip install --no-cache-dir --index-url ${TORCH_INDEX_URL} \
       torch==${TORCH_VER} torchvision==${TV_VER} torchaudio==${TA_VER}
 
-# --- Sanity check torch stack ---
-RUN python -c "import torch, torchvision, torchaudio; \
-print('torch:', torch.__version__); \
-print('torch.version.cuda:', torch.version.cuda); \
-print('torchvision:', torchvision.__version__); \
-print('torchaudio:', torchaudio.__version__); \
-assert torch.__version__.startswith('2.6.'), 'Torch is not 2.6.x'; \
-assert torch.version.cuda and torch.version.cuda.startswith('12.4'), 'Torch is not CUDA 12.4 build'"
-
-RUN python -m pip install --no-cache-dir flair==0.15.1
-
 # --- Install project requirements (includes transformers >= 4.55.0) ---
 WORKDIR /app
 COPY requirements.txt /tmp/requirements.txt
 RUN python -m pip install --no-cache-dir -r /tmp/requirements.txt
 
 # --- User setup (as before) ---
-ARG uid=1000
-ARG gid=1000
+ARG uid
+ARG gid
+
+# Set derived values with ENV or just use directly
+ENV USER_ID=${uid}
+ENV USER_GROUP_ID=${gid}
+
+# create a user group and a user
 ARG USER=dh
+#ARG USER_ID=$uid
 ARG USER_GROUP=dh
-
-RUN addgroup --gid ${gid} ${USER_GROUP} && \
-    adduser --gecos "" --disabled-password --uid ${uid} --gid ${gid} ${USER}
-
-USER ${USER}
+#ARG USER_GROUP_ID=$gid
+RUN addgroup --gid ${USER_GROUP_ID} ${USER_GROUP}
+RUN adduser --gecos "" --disabled-password --uid ${USER_ID} --gid ${USER_GROUP_ID} ${USER}
+USER ${USER}\
 COPY . /app
+
+# Expose Ollama port
+EXPOSE 11434

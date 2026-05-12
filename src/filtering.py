@@ -12,7 +12,8 @@ from sklearn.metrics.pairwise import cosine_similarity
 
 # CONFIG - tunable
 MIN_SENTENCES = 30
-SIM_THRESHOLD = 0.35
+MIN_TURNS     = 5
+SIM_THRESHOLD = 0.40
 
 TOPIC_LABELS = {
     "migration": "immigration, refugees, asylum seekers, border policy",
@@ -44,6 +45,11 @@ def count_sentences(conversation):
             continue
         total += len(sent_tokenize(turn.get("text", "")))
     return total
+
+
+def count_turns(conversation):
+    """Count non-deleted turns in a conversation."""
+    return sum(1 for turn in conversation if not turn.get("deleted", False))
 
 
 def aggregate_text(conversation):
@@ -102,9 +108,14 @@ def process_jsonl(input_path, output_path):
             thread = json.loads(line)
             conversation = thread.get("conversation", [])
 
-            # ---- LENGTH FILTER (min. 50 sentences) ----
+            # ---- LENGTH FILTER (min. sentences in thread) ----
             sentence_count = count_sentences(conversation)
             if sentence_count < MIN_SENTENCES:
+                continue
+
+            # ---- TURN FILTER (min. turns in thread) ----
+            turn_count = count_turns(conversation)
+            if turn_count < MIN_TURNS:
                 continue
 
             # ---- SEMANTIC FILTER (political issues) ----
@@ -116,6 +127,7 @@ def process_jsonl(input_path, output_path):
 
             # ---- ADD FIELDS ----
             thread["sentence_count"] = sentence_count
+            thread["turn_count"]     = turn_count
             thread["detected_topics"] = [str(t) for t in topics]
             thread["is_eurocentric"] = bool(is_eurocentric_sbert(full_text))
 
