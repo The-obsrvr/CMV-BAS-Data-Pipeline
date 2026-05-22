@@ -6,17 +6,6 @@ The primary contributor and point of contact for this repository is Siddharth Bh
 
 ---
 
-## Overview
-
-
-### Motivation
-
-
-
-
-
----
-
 ## Data Pipeline
 
 This project uses data from the publicly available [Webis ChangeMyView Corpus 2020](https://zenodo.org/records/3778298). The corpus contains all posts and comments from the ChangeMyView subreddit, covering the period from **2005 to September 2017**.
