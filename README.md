@@ -1,4 +1,4 @@
-# Data Processing Pipeline for transforming ChangeMyView Reddit Conversations to Bipolar Argument Structures
+# Data Processing Pipeline for Processing ChangeMyView Reddit Conversations
 
 This repository contains documentation on a project that forms part of a broader PhD research effort titled "Identifying the Stance of Argumentative Opinions in Political Discourse", conducted under the HYBRIDS Project within the Horizon Europe framework.
 
