@@ -84,11 +84,11 @@ To standardize the conversational structure and make it suited for computational
 
 This approach preserves conversational context while producing a linearized representation suitable for downstream modeling.
 
-## Neuro-symbolic Argumentation Reasoning System (NARS)
+## POLIBRA
 
-The conversational threads have been analyzed through our neuro-symbolic argumentation reasoning system that extracts argument structures from the conversations and then analyzes them through symbolic reasoning to determine if the delta event (view-change) has occurred. 
+The conversational threads have been analyzed through our neuro-symbolic argumentation reasoning system, POLIBRA that extracts argument structures from the conversations and then analyzes them through symbolic reasoning to determine if the delta event (view-change) has occurred. 
 
-For more details, refer to our NARS repository: 
+For more details, refer to our [POLIBRA repository](https://github.com/The-obsrvr/POLIBRA).
 
 ---
 
